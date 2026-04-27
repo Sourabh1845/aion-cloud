@@ -15,17 +15,11 @@
     --muted: #64748B;
     --success: #10B981;
     --danger: #EF4444;
+    --warning: #F59E0B;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2.5rem;
-    width: 100%;
-    max-width: 480px;
-  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem; width: 100%; max-width: 480px; }
   .logo { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: var(--accent); font-weight: 700; margin-bottom: 0.5rem; }
   .tagline { color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
   h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
@@ -39,7 +33,6 @@
   button { width: 100%; padding: 0.85rem; background: var(--accent); color: #fff; font-size: 0.9rem; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
   button:hover { background: #2563EB; transform: translateY(-1px); }
   button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
   .result { display: none; margin-top: 1.5rem; padding: 1.5rem; background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; }
   .result-title { font-size: 0.8rem; color: var(--success); font-weight: 600; margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace; }
   .api-key-box { background: #050a14; border: 1px solid var(--border); border-radius: 6px; padding: 0.8rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--accent); word-break: break-all; margin-bottom: 0.8rem; }
@@ -48,9 +41,13 @@
   .plan-info { display: flex; justify-content: space-between; margin-top: 0.8rem; }
   .plan-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); }
   .plan-badge span { color: var(--success); }
-
   .error { display: none; margin-top: 1rem; padding: 0.8rem 1rem; background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; color: var(--danger); font-size: 0.85rem; }
-
+  .pricing { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+  .price-card { padding: 1rem; background: #050a14; border: 1px solid var(--border); border-radius: 8px; }
+  .price-card.active { border-color: rgba(59,130,246,0.4); }
+  .price-name { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--accent); }
+  .price-calls { color: var(--muted); font-size: 0.78rem; margin-top: 0.3rem; }
+  .price-cost { font-size: 0.75rem; font-weight: 600; margin-top: 0.5rem; }
   .footer-links { margin-top: 1.5rem; display: flex; gap: 1.5rem; justify-content: center; }
   .footer-links a { color: var(--muted); font-size: 0.8rem; text-decoration: none; transition: color 0.2s; }
   .footer-links a:hover { color: var(--text); }
@@ -65,11 +62,25 @@
   <h1>Get your API key</h1>
   <p class="subtitle">Free forever. No credit card. Start controlling your AI agents in minutes.</p>
 
+  <div class="pricing">
+    <div class="price-card active">
+      <div class="price-name">Free</div>
+      <div class="price-calls">10,000 calls/month</div>
+      <div class="price-cost" style="color:var(--success);">$0 forever</div>
+    </div>
+    <div class="price-card">
+      <div class="price-name">Pro</div>
+      <div class="price-calls">100,000 calls/month</div>
+      <div class="price-cost" style="color:var(--warning);">Coming soon</div>
+    </div>
+  </div>
+
   <div class="features">
-    <div class="feature"><span>✓</span> 1,000 API calls/month free</div>
+    <div class="feature"><span>✓</span> 10,000 API calls/month free</div>
     <div class="feature"><span>✓</span> RSA-2048 signed tokens</div>
     <div class="feature"><span>✓</span> Replay attack prevention</div>
     <div class="feature"><span>✓</span> Works with LangChain & CrewAI</div>
+    <div class="feature"><span>✓</span> No credit card required</div>
   </div>
 
   <label>YOUR EMAIL</label>
@@ -84,7 +95,7 @@
     <button class="copy-btn" onclick="copyKey()">Copy API Key</button>
     <div class="plan-info">
       <div class="plan-badge">Plan: <span>Free</span></div>
-      <div class="plan-badge">Calls: <span>1,000 / month</span></div>
+      <div class="plan-badge">Calls: <span>10,000 / month</span></div>
     </div>
   </div>
 </div>
@@ -102,14 +113,11 @@
   async function register() {
     const email = document.getElementById('email').value.trim();
     if (!email) return;
-
     const btn = document.getElementById('register-btn');
     btn.textContent = "Generating...";
     btn.disabled = true;
-
     document.getElementById('error-box').style.display = 'none';
     document.getElementById('result-box').style.display = 'none';
-
     try {
       const res = await fetch(`${AION_CLOUD_URL}/register`, {
         method: 'POST',
@@ -117,7 +125,6 @@
         body: JSON.stringify({ email })
       });
       const data = await res.json();
-
       if (res.status === 400) {
         document.getElementById('error-box').textContent = "This email is already registered.";
         document.getElementById('error-box').style.display = 'block';
@@ -130,7 +137,6 @@
       document.getElementById('error-box').textContent = "Server error. Please try again.";
       document.getElementById('error-box').style.display = 'block';
     }
-
     btn.textContent = "Get Free API Key →";
     btn.disabled = false;
   }
