@@ -247,7 +247,38 @@ def get_me(x_aion_api_key: str = Header(None)):
         "calls_remaining": calls_limit - calls_used,
         "calls_limit": calls_limit
     }
+ADMIN_KEY = os.environ.get("ADMIN_KEY", "aion-admin-secret-2026")
 
+@app.get("/admin/users")
+def admin_users(admin_key: str):
+    if admin_key != ADMIN_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT email, plan, calls_used, calls_limit, 
+               calls_limit - calls_used as calls_remaining,
+               created_at 
+        FROM cloud_users 
+        ORDER BY created_at DESC
+    """)
+    users = cur.fetchall()
+    cur.close()
+    conn.close()
+    return {
+        "total_users": len(users),
+        "users": [
+            {
+                "email": u[0],
+                "plan": u[1],
+                "calls_used": u[2],
+                "calls_limit": u[3],
+                "calls_remaining": u[4],
+                "joined": str(u[5])
+            }
+            for u in users
+        ]
+    }
 @app.get("/health")
 def health():
     return {"status": "AION Cloud is running", "version": "1.0.0"}
