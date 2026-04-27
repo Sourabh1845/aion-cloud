@@ -41,7 +41,7 @@ def init_db():
             api_key TEXT UNIQUE NOT NULL,
             plan TEXT DEFAULT 'free',
             calls_used INTEGER DEFAULT 0,
-            calls_limit INTEGER DEFAULT 1000,
+            calls_limit INTEGER DEFAULT 10000,
             created_at TIMESTAMPTZ DEFAULT NOW()
         )
     """)
