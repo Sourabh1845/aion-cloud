@@ -100,7 +100,10 @@ def init_db():
 
 @app.on_event("startup")
 def startup():
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        print(f"AION Cloud DB init failed: {e}")
 
 
 
