@@ -36,7 +36,8 @@ SCOPE_REGEX = re.compile(r"^[a-zA-Z0-9._\-]+$")
 def get_conn():
     if not DATABASE_URL:
         raise HTTPException(status_code=500, detail="DATABASE_URL is not configured")
-    return psycopg2.connect(DATABASE_URL)
+    return psycopg2.connect(DATABASE_URL, sslmode="require")
+
 
 
 def init_db():
